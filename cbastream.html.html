@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CBA Stream</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+/* CSS Ilirekebishwa */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+.header {background: white;border-bottom: 1px solid #e0e0e0;padding: 12px 20px;display: flex;justify-content: space-between;align-items: center;position: sticky;top: 0;z-index: 1000;}
+.logo {display: flex;align-items: center;gap: 8px;}
+.logo-icon {width: 32px;height: 32px;background: #ff4500;border-radius: 50%;display: flex;align-items: center;justify-content: center;color: white;font-weight: bold;}
+.logo-text {font-size: 20px;font-weight: 700;color: #333;}
+.search-box {position: relative;max-width: 300px;flex: 1;margin: 0 20px;}
+.search-box input {width: 100%;padding: 8px 40px 8px 16px;border: 1px solid #ddd;border-radius: 20px;background: #f8f9fa;outline: none;font-size: 14px;}
+.search-icon {position: absolute;right: 12px;top: 50%;transform: translateY(-50%);color: #666;}
+.nav {display: flex;gap: 24px;}
+.nav-item {color: #333;text-decoration: none;font-weight: 500;padding: 8px 16px;border-radius: 8px;transition: all 0.2s;display: flex;align-items: center;gap: 6px;}
+.nav-item:hover {background: #f8f9fa;color: #ff4500;}
+.nav-item.active {color: #ff4500;background: #fff2e5;}
+.main-container {max-width: 1200px;margin: 0 auto;padding: 24px 20px;}
+.page-title {font-size: 32px;font-weight: 700;color: #333;margin-bottom: 24px;}
+.notice-bar {background: #fff2e5;border: 1px solid #ffcc99;border-radius: 8px;padding: 12px 20px;margin-bottom: 24px;display: flex;align-items: center;gap: 8px;}
+.refresh-btn {background: #fff2e5;border: 1px solid #ffcc99;border-radius: 8px;padding: 12px 20px;margin-bottom: 24px;color: #ff4500;cursor: pointer;display: flex;align-items: center;gap: 8px;font-weight: 500;}
+.refresh-btn:hover {background: #ffe5cc;}
+.notice-text {color: #cc6600;font-size: 14px;}
+.notice-text strong {color: #ff4500;}
+.channels-list {display: flex;flex-direction: column;gap: 16px;}
+.channel-item {background: white;border-radius: 12px;padding: 20px;display: flex;align-items: center;justify-content: space-between;box-shadow: 0 2px 8px rgba(0,0,0,0.06);border: 1px solid #f0f0f0;transition: all 0.3s ease;}
+.channel-item:hover {box-shadow: 0 4px 16px rgba(0,0,0,0.1);transform: translateY(-2px);}
+.channel-info {display: flex;align-items: center;gap: 16px;}
+.channel-icon {width: 48px;height: 48px;background: linear-gradient(135deg, #ff6b35, #f7931e);border-radius: 50%;display: flex;align-items: center;justify-content: center;color: white;font-weight: bold;font-size: 18px;}
+.channel-details h3 {font-size: 18px;font-weight: 600;color: #333;margin-bottom: 4px;}
+.channel-details p {font-size: 14px;color: #666;}
+.watch-btn {background: #ff4500;color: white;border: none;padding: 12px 24px;border-radius: 8px;font-weight: 600;cursor: pointer;display: flex;align-items: center;gap: 8px;transition: all 0.2s;font-size: 14px;}
+.watch-btn:hover {background: #e63e00;transform: translateY(-1px);}
+.more-btn {background: none;border: none;color: #666;cursor: pointer;padding: 8px;border-radius: 6px;margin-left: 12px;}
+.more-btn:hover {background: #f0f0f0;}
+/* Player Page */
+.player-page {display: none;max-width: 1400px;margin: 0 auto;padding: 20px;}
+.back-btn {color: #666;text-decoration: none;display: flex;align-items: center;gap: 8px;margin-bottom: 20px;font-weight: 500;}
+.back-btn:hover {color: #ff4500;}
+.player-container {display: flex;gap: 24px;margin-top: 20px;}
+.video-section {flex: 2;}
+.video-player {background: #000;border-radius: 12px;overflow: hidden;position: relative;aspect-ratio: 16/9;}
+.video-player video {width: 100%;height: 100%;object-fit: cover;}
+.live-badge {position: absolute;top: 12px;left: 12px;background: #ff0000;color: white;padding: 4px 8px;border-radius: 4px;font-size: 12px;font-weight: bold;}
+.video-title {margin-top: 16px;font-size: 24px;font-weight: 600;color: #333;}
+.video-subtitle {color: #666;font-size: 14px;margin-top: 4px;}
+.refresh-video-btn {background: #fff2e5;border: 1px solid #ffcc99;border-radius: 8px;padding: 12px 20px;margin-top: 16px;color: #ff4500;cursor: pointer;display: flex;align-items: center;gap: 8px;font-weight: 500;width: fit-content;}
+.action-buttons {display: flex;gap: 12px;margin-top: 20px;}
+.action-btn {background: #f8f9fa;border: 1px solid #e9ecef;color: #495057;padding: 8px 16px;border-radius: 8px;cursor: pointer;display: flex;align-items: center;gap: 6px;font-size: 14px;}
+.action-btn:hover {background: #e9ecef;}
+.chat-section {flex: 1;background: white;border-radius: 12px;border: 1px solid #e0e0e0;display: flex;flex-direction: column;height: fit-content;max-height: 600px;}
+.chat-header {padding: 16px 20px;border-bottom: 1px solid #e0e0e0;font-weight: 600;color: #333;display: flex;align-items: center;gap: 8px;}
+.chat-messages {flex: 1;padding: 16px 20px;overflow-y: auto;min-height: 300px;max-height: 400px;}
+.chat-message {margin-bottom: 16px;}
+.chat-username {font-weight: 600;color: #333;font-size: 14px;}
+.chat-time {color: #666;font-size: 12px;margin-left: 8px;}
+.chat-text {color: #555;font-size: 14px;margin-top: 2px;}
+.chat-input-container {border-top: 1px solid #e0e0e0;padding: 16px 20px;display: flex;gap: 12px;}
+.chat-input {flex: 1;border: 1px solid #ddd;border-radius: 20px;padding: 8px 16px;outline: none;font-size: 14px;}
+.chat-send-btn {background: #ff4500;color: white;border: none;padding: 8px 16px;border-radius: 20px;cursor: pointer;font-weight: 500;}
+.chat-send-btn:hover {background: #e63e00;}
+.footer {text-align: center;padding: 40px 20px;color: #666;font-size: 14px;border-top: 1px solid #e0e0e0;margin-top: 60px;}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">C</div>
+    <div class="logo-text">CBA STREAM</div>
+  </div>
+  <div class="search-box">
+    <input type="text" placeholder="Search Channel..." id="searchInput" onkeyup="searchChannels()">
+    <span class="search-icon">🔍</span>
+  </div>
+  <nav class="nav">
+    <a href="#" class="nav-item" id="homeLink" onclick="showPage('homePage')">🏠 Home</a>
+    <a href="#" class="nav-item" id="leaguesLink" onclick="showPage('leaguesPage')">⚽ LEAGES</a>
+    <a href="#" class="nav-item" id="liveLink" onclick="showPage('liveNowPage')">🔴 Live Now</a>
+  </nav>
+</header>
+
+<div class="main-container" id="homePage">
+  <h1 class="page-title">Sports News</h1>
+  <div class="refresh-btn" onclick="refreshPage()">🔄 Press to Refresh The Schedule (GMT+1)</div>
+  <div class="notice-bar">
+    <span class="notice-text">Please note: CBA STREAM is only <strong>CBASTREAM.COM</strong>, any other website with the same name is fake</span>
+  </div>
+  <div class="channels-list" id="channelsList"></div>
+</div>
+
+<div class="main-container" id="leaguesPage" style="display:none;">
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">League and TV Stations Catalog</h2>
+        <p class="text-gray-600">Discover TV stations that show your favorite leagues.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="leagueList">
+        </div>
+</div>
+
+<div class="main-container" id="liveNowPage" style="display:none;">
+  <h1 class="page-title">Live Now</h1>
+  <p>Currently live matches will appear here.</p>
+</div>
+
+<div class="player-page" id="playerPage">
+  <a href="#" class="back-btn" onclick="showPage('homePage')">⬅ Back</a>
+  <div class="player-container">
+    <div class="video-section">
+      <div class="video-player">
+        <video id="videoPlayer" controls autoplay>
+          <source src="" type="application/x-mpegURL">
+        </video>
+        <div class="live-badge">CBA</div>
+      </div>
+      <div class="video-title" id="videoTitle">Channel Name</div>
+      <div class="video-subtitle">Streaming in HD quality</div>
+      <button class="refresh-video-btn" onclick="refreshVideo()">🔄 Refresh Video</button>
+      <div class="action-buttons">
+        <button class="action-btn">👍 Like</button>
+        <button class="action-btn">💬 Comment</button>
+        <button class="action-btn">↗ Share</button>
+      </div>
+    </div>
+    <div class="chat-section">
+      <div class="chat-header">💬 Live Chat</div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-message">
+          <span class="chat-username">User1</span>
+          <span class="chat-time">12:00</span>
+          <div class="chat-text">Good match!</div>
+        </div>
+      </div>
+      <div class="chat-input-container">
+        <input type="text" class="chat-input" placeholder="Type a message...">
+        <button class="chat-send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">© 2025 CBA Stream. All Rights Reserved.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script>
+let channelStreams = {
+  // Orodha ya Chaneli Zilizopo
+  "A SPORT":"https://spstr.abntv.live/hls/psstream.m3u8",
+  "ABC EAST":"https://fl7.moveonjoy.com/ABC_EAST/tracks-v1a1/mono.ts.m3u8",
+  "Africa 24 Sport":"https://edge15.vedge.infomaniak.com/livecast/ik:africa24sport/chunklist_w1511556528.m3u8",
+  "AMAGI":"https://sportsgrid-plex.amagi.tv/playlist216lp.m3u8",
+  "AMAGI":"https://mainstreammedia-worldoffreesportsintl-rakuten.amagi.tv/240p-cc/index.m3u8",
+  "ARRYDIA":"https://cdn.live.easybroadcast.io/abr_corp/73_arryadia_k2tgcj0/corp/73_arryadia_k2tgcj0_480p/chunks_dvr.m3u8",
+  "Azam Sport 1HD":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/26.m3u8",
+  "Azam Sport 2HD":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/360.m3u8",
+  "Azam Sport 3HD":"https://dmitwlvvll.cdn.mgmlcdn.com/dubaisportshd/smil:dubaisportshd.smil/chunklist_b300000.m3u8",
+  "Azam Sport 4HD":"https://dmitwlvvll.cdn.mgmlcdn.com/dubaisportshd5/smil:dubaisportshd5.smil/chunklist_b300000.m3u8",
+  "BANANA BALL":"https://aegis-cloudfront-1.tubi.video/74681dcc-e6d0-4add-ad67-a22ad9c152e6/playlist_5.m3u8",
+  "BANG-BANG-TV":"https://streams2.sofast.tv/ptnr-yupptv/title-BANG-BANG-TV-ENG_yupptv/v1/manifest/611d79b11b77e2f571934fd80ca1413453772ac7/6a98fce2-bf4c-4bfb-91f4-c43851bb3801/fe23c1a9-cdd2-4fb8-b1fd-9e0f205d26b4/0.m3u8",
+  "BeIN Sports 1":"https://example.com/eurosport2/playlist.m3u8",
+  "BeIN Sports 1":"https://dbrb49pjoymg4.cloudfront.net/v1/manifest/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod_default_xumo-ams-aws/936e8827-aa87-441d-bf96-6355b01fb232/4.m3u8",
+  "BeIN Sports 2":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/269.m3u8",
+  "z5":"https://dbrb49pjoymg4.cloudfront.net/v1/manifest/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod_default_xumo-ams-aws/a68d0ad2-0e96-427a-872e-bba3e002ba20/1.m3u8",
+  "BeIN Sports 3":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/310.m3u8",
+  "BeIN Sports 6":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/59.m3u8",
+  "BeIN Sports 4":"https://d3j0xs5tf3fay7.cloudfront.net/v1/manifest/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-pk6mnjx9jpmpg/018b271a-1aa4-4e5d-b37e-03544d6ddacf/4.m3u8",
+  "BeIN Sports 5 ":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/276.m3u8",
+  "BeIN Sports Extra":"https://bein-xtra-xumo.amagi.tv/hls/amagi_hls_data_beinAAAAA-bein-xtra-xumoA/CDN/426x240_345400/chunklist.m3u8",
+  "BLUES+":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/115.m3u8",
+  "CANADA One TV":"https://cdn8.live247stream.com/canadaone/tv/playlist.m3u8",
+  "Canal Do Inter":"https://rtatv.akamaized.net/Content/HLS/Live/channel(RTA3)/01.m3u8",
+  "CBA TV 1":"https://live3.tdm.com.mo/ch4/sport_ch4.live/chunklist_w1382028763.m3u8",
+  "CBA TV 2":"https://rightsboosterltd-scl-1-eu.rakuten.wurl.tv/1200.m3u8",
+  "CBSN":"https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master_21.m3u8",
+  "CHINA SPORT":"https://cdn-6.pishow.tv/live/13/13_2.m3u8",
+  "COSMOTE SPORT 2":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/28.m3u8",
+  "COSMOTE SPORT 3":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/475.m3u8",
+  "COSMOTE SPORT 4":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/456.m3u8",
+  "COSMOTE SPORT 5":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/474.m3u8",
+  "COSMOTE SPORT 6":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/434.m3u8",
+  "COSMOTE SPORT 7":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/476.m3u8",
+  "ESPN":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/280.m3u8",
+  "ESPN 2":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/281.m3u8",
+  "ESPN2":"https://fl7.moveonjoy.com/ESPN_2/index.m3u8",
+  "ESPN2":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/280.m3u8",
+  "Football Channel 48":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/222.m3u8",
+  "FOX Sports":"https://fl7.moveonjoy.com/FOX_Sports_1/tracks-v1a1/mono.ts.m3u8",
+  "FUEL+":"https://amg01074-fueltv-fueltvemeaen-rakuten-b6j62.amagi.tv/hls/amagi_hls_data_rakutenAA-fueltvemeaen/CDN/640x360_985600/chunklist.m3u8",
+  "GAME+":"https://a-cdn.klowdtv.com/live2/fntsy_720p/chunks.m3u8",
+  "HORROR-TV":"https://streams2.sofast.tv/ptnr-yupptv/title-HORROR-TV-ENG_yupptv/v1/manifest/611d79b11b77e2f571934fd80ca1413453772ac7/93dc292b-cbcf-4988-ab97-94feced4c14b/4cc2fe04-ef11-43d0-887e-8847c0e62f52/0.m3u8",
+  "KTV Sport":"https://kwtspta.cdn.mangomolo.com/sp/smil:sp.stream.smil/chunklist_b900000_t64MzYwcA==.m3u8",
+  "LACROSSE TV":"https://1840769862.rsc.cdn77.org/FTF/LSN_SCTE_v2.m3u8",
+  "MOVIE TV 1":"https://kwtspta.cdn.mangomolo.com/sp/smil:sp.stream.smil/chunklist_b350000_t64MjQwcA==.m3u8",
+  "MOVIE TV 2":"https://kwtsplta.cdn.mangomolo.com/spl/smil:spl.stream.smil/chunklist_b350000_t64MjQwcA==.m3u8",
+  "NAUTICAL":"https://a-cdn.klowdtv.com/live2/nautical_720p/chunks.m3u8",
+  "NBC SPORT":"https://d1m1xk35ma8qfl.cloudfront.net/v1/manifest/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-v4tilgx2y7n7y/81720a55-85ea-4b53-89ba-dc083edd8aef/6.m3u8",
+  "NFL RedZone":"https://fl7.moveonjoy.com/NFL_RedZone/tracks-v1a1/mono.ts.m3u8",
+  "odo Sport":"https://rtatv.akamaized.net/Content/HLS/Live/channel(RTA3)/01.m3u8",
+  "PREMIER SPORTS 1":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/253.m3u8",
+  "PREMIER SPORTS 2":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/98.m3u8",
+  "PRO SPORT":"https://proshls.wns.live/hls/stream.m3u8",
+  "Real Madrid TV":"https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/bitrate_1.m3u8",
+  "RightNow TV":"https://a-cdn.klowdtv.com/live2/rightnowtv_720p/chunks.m3u8",
+  "S LALIGA":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/317.m3u8",
+  "S PLS":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/34.m3u8",
+  "S30":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/317.m3u8",
+  "SCIFI-WORLD":"https://streams2.sofast.tv/ptnr-yupptv/title-SCIFI-WORLD-ENG_yupptv/v1/manifest/611d79b11b77e2f571934fd80ca1413453772ac7/a985e052-6868-4365-ac45-52afe9008b25/e91b0261-3648-4022-9285-6cad4e8ba4a8/1.m3u8",
+  "Seria A":"https://cdn-edge-05-edc-mm.legaseriea-live1.cdn.netrw.it/seriea/restreamer/seriea_client/gpu-a-c0-8/restreamer/outgest/84d19a87-f82f-4aa2-80cd-2ab1105eac79/h264_720p_manifest.m3u8",
+  "Sky Sports footbal":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/308.m3u8",
+  "Sky Sports main event":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/177.m3u8",
+  "Sky Sports premire leage":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/125.m3u8",
+  "Sky Sports+":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/233.m3u8",
+  "Sky Sports":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/177.m3u8",
+  "Sky Sports 3":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/307.m3u8",
+  "Sky Sports 4":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/315.m3u8",
+  "Sky Sports 4":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/229.m3u8",
+  "Sky Sports 5":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/313.m3u8",
+  "Sky Sports live":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/187.m3u8",
+  "SLOT":"https://equidia-live2-p31-cdn.hexaglobe.net/c05c85116cc3999da2215304731c28d5/68ceb7ba/equidia/equidia-mobileapp-ios-1/eqdlivepri_fre.smil/slot09_144p.m3u8",
+  "SOFAST":"https://streams2.sofast.tv/ptnr-yupptv/title-absinthetv/v1/manifest/611d79b11b77e2f571934fd80ca1413453772ac7/254b2fef-a3dd-4a6d-af18-38711e02e31c/83683ade-ca88-47ee-a229-1967fcf49f57/1.m3u8",
+  "Sport Live ":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/264.m3u8",
+  "SPORTS TV":"https://live.sportstv.com.tr/hls/low/sportstv_fhd/index.m3u8",
+  "Sport Tv 3":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/233.m3u8",
+  "Sport Tv 6":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/323.m3u8",
+  "Sport Itali":"https://amg01370-italiansportcom-sportitalia-rakuten-3hmdb.amagi.tv/hls/amagi_hls_data_rakutenAA-sportitalia-rakuten/CDN/1280x720_2560800/chunklist.m3u8",
+  "Sport Tv 2":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/238.m3u8",
+  "SportHD":"https://ott-balancer.tvri.go.id/live/eds/SportHD/hls/SportHD-avc1_250000=10000-mp4a_64000=20001.m3u8",
+  "Sports tv HD":"https://live.sportstv.com.tr/hls/low/sportstv_hd/index.m3u8",
+  "TNT SPORTS 1":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/235.m3u8",
+  "TNT SPORTS 2":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/291.m3u8",
+  "TNT SPORTS 3":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/294.m3u8",
+  "TSN":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/177.m3u8",
+  "TVG":"https://d3ehq1uaxory6w.cloudfront.net/out/v1/35c05f080f4e49a4b4eb031b5a14e505/TVG2index_2.m3u8",
+  "URBAN-ACTION":"https://streams2.sofast.tv/ptnr-yupptv/title-URBAN-ACTION-ENG_yupptv/v1manifest/611d79b11b77e2f571934fd80ca1413453772ac7/7ad8ce96-5a3f-413e-ae15-7c2cef7bc8f8/032f23b1-3ad1-451d-94ea-58d64dc42aeb/0.m3u8",
+  "WOF TV":"https://rakutenaa-mainstreammediafreesportsintl-rakuten-t7dc0.amagi.tv/ts-eu-w1-n2/playlist/rakutenAA-mainstreammediafreesportsintl-rakuten/cb553d177c6c678b9ad43d64d6ef41a6d9242ffc087a8d6933fb4b926bc10f41e2e5af97b20cac7822fb0fdf61146d5a4d009247d8780ad7967cac48240d5734c6cdd52e8be24b4daddd0c2d34b07c0e49857671ad594f32d5e0110dc51ab07a0e1ca1494d5e2082b00cb27756c59e0a957f378bbdbe306f2c180680585ee2be5da5ef940912c76da5b102488b2f5be790569d861fb3d6865ccc5e8f70f2118093f1ddd30d8ad0c466b45eb06d51012779ce812f97c86f5cbbf01b512a81413c7c61dce1fbca4f329c464d55f98dbad507de35be43a11c024ddd219e5d8d338b11d961406527d2c09fde50013cb78468602ba1e4adc8855dd7390f89c0b98f0908bdf7063842da2deb23273991f08b2681c41c99b869e5e623756ab1ec1d9cb9bbcc9410f4c069f7a6d630bb1d083a4202108f5ea3d549da3be27dbbf12020504c45a0a0f2a5ecc4733f78468a8c5f9b4655e99bc3b4d6003fc577081ac654990a55229c6f2c4bec23afce672c91705ecc751ceb48398575f9ba07fcb394b0556cfb8d9102b744c78127feba42a564375c4294f72f544a053df3e674023d7c8c14b08384b139594ebcb7feffc6522a0e7642015bc5b1b130be8ac7664c42911d762e245e47e471bc03e809470421de0d93fd5906e228156db7f7710d2023fca19c8884c4c557ba79c7bd941426384b6cae3c033214bd93895ef878063e4d548e0b6b54ae453d66ef86c2f1969064acc5324a5998fab86396a3f1549b0efb2ae332e981d3d3ffc783/96/1920x1080_6046040/index.m3u8",
+  "WPT-DistroTV":"https://d3w4n3hhseniak.cloudfront.net/v1/manifest/9d062541f2ff39b5c0f48b743c6411d25f62fc25/WPT-DistroTV/09785655-0f47-40b6-b730-1bde71cb9720/0.m3u8",
+  "WURL TV":"https://rightsboosterltd-scl-1-eu.rakuten.wurl.tv/1200.m3u8",
+  "YOYOTE":"https://fl7.moveonjoy.com/ESPN_2/index.m3u8",
+  "Sport Tv 1":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/239.m3u8",
+  "COSMOTE SPORT 7":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/476.m3u8",
+  "COSMOTE SPORT 8":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/475.m3u8",
+  "YOYOTE":"https://fl7.moveonjoy.com/ESPN_2/index.m3u8",
+  "SPORT TV":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/314.m3u8",
+  "YOYOTE":"https://fl7.moveonjoy.com/ESPN_2/index.m3u8",
+  "4SPORT":"https://pepsi.abntv.live/hls/4spstream.m3u8",
+  "DUBAI SPORT 2":"https://dmitwlvvll.cdn.mgmlcdn.com/dubaisportshd/smil:dubaisportshd.smil/chunklist_b300000.m3u8",
+  "DUBAI SPORT 3":"https://dmitwlvvll.cdn.mgmlcdn.com/dubaisportshd5/smil:dubaisportshd5.smil/chunklist_b300000.m3u8",
+  "z1":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/67.m3u8",
+  "EA SPORT":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/74.m3u8",
+  "NORD VPN":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/213.m3u8",
+  "z2":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/46.m3u8",
+  "z3":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/31.m3u8",
+  "z4":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/215.m3u88",
+  "z6":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/215.m3u8",
+  "z7":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/220.m3u8",
+  "z8":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/219.m3u8",
+  "z9":"https://fawatv.online/live/F2E62CEFFF6C6F88C237BD9DF4957C35/294.m3u8",
+      
+   };
+
+const tvData = {
+  "Premier League": {
+    "vituo": ["Sky Sports", "beIN Sports", "NBC Sports", "A SPORT", "Azam Sports", "COSMOTE SPORTS"],
+    "maelezo": "England's top-tier league."
+  },
+  "La Liga": {
+    "vituo": ["REAL MADRID TV", "beIN Sports ", "ESPN", "Azam Sports", "S LALIGA", "SKY SPORTS", "S30", "COSMOTE SPORTS","A SPORT"],
+    "maelezo": "Spain's top-tier league."
+  },
+  "Serie A": {
+    "vituo": ["Seria A", "Sport Italia", "Sky Sport", "S30", "beIN Sports", "COSMOTE SPORTS"],
+    "maelezo": "Italy's top-tier league."
+  },
+  "Bundesliga": {
+    "vituo": ["ESPN 2", "Sport TV", "Azam Sports", "BLUES+", "beIN Sports","Sky Sport", "DAZN", "COSMOTE SPORTS","A SPORT"],
+    "maelezo": "Germany's top-tier league."
+  },
+  "UEFA Champions League": {
+    "vituo": ["CBA TV 1", "beIN Sports", "CBS Sports", "TNT Sports", "Azam Sports", "CHINA SPORT", "odo Sport", "Sky Sports", "COSMOTE SPORTS","A SPORT"],
+    "maelezo": "Europe's top club competition."
+  },
+  "Tanzania Mainland Premier League": {
+    "vituo": ["Azam Sport 1HD", "Azam Sport 2HD", "Azam Sports 3HD ", "Azam Sports 3HD", "TBC Sport"],
+    "maelezo": "Tanzania's top-tier league."
+  },
+  "CAF CHAMPIONS LEAGE": {
+    "vituo": ["BeiN Sport 1", "BeiN Sport 2","BeiN Sport 3","BeiN Sport 4--10", "Azam Sport 1HD", "Azam Sport 2HD", "Azam Sport 3HD","Azam Sport 4HD"],
+    "maelezo": "Africa's top club competition."
+  },
+  "NFL": {
+    "vituo": ["ESPN", "CBS", "FOX", "CBS Sports", "NBC Sports"],
+    "maelezo": "United States' top American football league."
+  }
+};
+
+function populateChannels() {
+  const list = document.getElementById('channelsList');
+  list.innerHTML = '';
+  
+  const sortedChannels = Object.keys(channelStreams).sort();
+
+  sortedChannels.forEach((channel, index) => {
+    const div = document.createElement('div');
+    div.className = 'channel-item';
+    div.innerHTML = `
+      <div class="channel-info">
+        <div class="channel-icon">${index + 1}</div>
+        <div class="channel-details">
+          <h3>${channel}</h3>
+          <p>Live Streaming</p>
+        </div>
+      </div>
+      <button class="watch-btn" onclick="playChannel('${channel}')">▶ Watch</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function playChannel(channel) {
+  const playerPage = document.getElementById('playerPage');
+  const homePage = document.getElementById('homePage');
+  const videoTitle = document.getElementById('videoTitle');
+  const videoPlayer = document.getElementById('videoPlayer');
+
+  showPage('playerPage');
+  videoTitle.textContent = channel;
+  const videoUrl = channelStreams[channel];
+
+  if(Hls.isSupported()) {
+    var hls = new Hls();
+    hls.loadSource(videoUrl);
+    hls.attachMedia(videoPlayer);
+    hls.on(Hls.Events.MANIFEST_PARSED,function() {
+      videoPlayer.play();
+    });
+  } else if(videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+    videoPlayer.src = videoUrl;
+    videoPlayer.addEventListener('loadedmetadata', function() { videoPlayer.play(); });
+  }
+}
+
+function refreshVideo() {
+  const videoPlayer = document.getElementById('videoPlayer');
+  videoPlayer.load();
+  videoPlayer.play();
+}
+
+function refreshPage() { location.reload(); }
+
+function showPage(pageId) {
+  const pages = ['homePage', 'leaguesPage', 'liveNowPage', 'playerPage'];
+  pages.forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById(pageId).style.display = 'block';
+
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => item.classList.remove('active'));
+  if (pageId === 'homePage') {
+    document.getElementById('homeLink').classList.add('active');
+  } else if (pageId === 'leaguesPage') {
+    document.getElementById('leaguesLink').classList.add('active');
+  } else if (pageId === 'liveNowPage') {
+    document.getElementById('liveLink').classList.add('active');
+  }
+}
+
+function searchChannels() {
+  const input = document.getElementById('searchInput').value.toLowerCase();
+  const channels = document.querySelectorAll('.channel-item');
+  channels.forEach(ch => {
+    const name = ch.querySelector('h3').textContent.toLowerCase();
+    ch.style.display = name.includes(input) ? 'flex' : 'none';
+  });
+}
+
+function populateLeagues() {
+  const leagueList = document.getElementById('leagueList');
+  leagueList.innerHTML = '';
+  Object.keys(tvData).forEach(league => {
+    const data = tvData[league];
+    const card = document.createElement('div');
+    card.className = "bg-white p-6 rounded-xl shadow-md border border-gray-200 transition-transform transform hover:scale-105";
+
+    const title = document.createElement('h3');
+    title.className = "text-xl font-semibold text-orange-500 mb-2";
+    title.textContent = league;
+    card.appendChild(title);
+
+    const description = document.createElement('p');
+    description.className = "text-gray-600 mb-4";
+    description.textContent = data.maelezo;
+    card.appendChild(description);
+
+    const channelsLabel = document.createElement('h4');
+    channelsLabel.className = "text-sm font-medium text-gray-500 uppercase mb-2";
+    channelsLabel.textContent = "Broadcasting Stations:";
+    card.appendChild(channelsLabel);
+
+    const channelsList = document.createElement('ul');
+    channelsList.className = "space-y-2";
+    data.vituo.forEach(channel => {
+      const li = document.createElement('li');
+      li.className = "flex items-center text-sm text-gray-700";
+      li.innerHTML = `<span class="h-2 w-2 bg-orange-500 rounded-full mr-2"></span>${channel}`;
+      channelsList.appendChild(li);
+    });
+    card.appendChild(channelsList);
+
+    leagueList.appendChild(card);
+  });
+}
+
+window.onload = () => {
+  populateChannels();
+  populateLeagues();
+  showPage('homePage');
+};
+</script>
+</body>
+</html>
